@@ -3,17 +3,13 @@ import {BullModule} from '@nestjs/bullmq';
 import {AppController} from './app.controller';
 import {AppService} from './app.service';
 import {RedisModule} from './redis/redis.module';
+import {redisConnection} from './redis/redis.config';
 import {PlatesModule} from './plates/plates.module';
 
 @Module({
     imports: [
         // Docs: https://docs.nestjs.com/techniques/queues
-        BullModule.forRoot({
-            connection: {
-                host: process.env.REDIS_HOST ?? 'localhost',
-                port: Number(process.env.REDIS_PORT ?? 6379),
-            },
-        }),
+        BullModule.forRoot({connection: redisConnection()}),
         RedisModule,
         PlatesModule,
     ],

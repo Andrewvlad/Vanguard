@@ -1,5 +1,6 @@
 import {Module} from '@nestjs/common';
 import Redis from 'ioredis';
+import {redisConnection} from './redis.config';
 
 /**
  BullMQ creates and owns its own connection using .forRoot()
@@ -13,11 +14,7 @@ export const REDIS_CACHE = 'REDIS_CACHE';
     providers: [
         {
             provide: REDIS_CACHE,
-            useFactory: () =>
-                new Redis({
-                    host: process.env.REDIS_HOST ?? 'localhost',
-                    port: Number(process.env.REDIS_PORT ?? 6379),
-                }),
+            useFactory: () => new Redis(redisConnection()),
         },
     ],
     exports: [REDIS_CACHE],
