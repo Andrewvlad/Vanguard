@@ -1,9 +1,7 @@
 import {Module} from '@nestjs/common';
 import {BullModule} from '@nestjs/bullmq';
-import {AppController} from './app.controller';
-import {AppService} from './app.service';
-import {RedisModule} from './redis/redis.module';
-import {PlatesModule} from './plates/plates.module';
+import {RedisModule} from '../../redis/redis.module';
+import {PlateProcessor} from './plate.processor';
 
 @Module({
     imports: [
@@ -15,9 +13,7 @@ import {PlatesModule} from './plates/plates.module';
             },
         }),
         RedisModule,
-        PlatesModule,
     ],
-    controllers: [AppController],
-    providers: [AppService],
+    providers: [PlateProcessor],
 })
-export class AppModule {}
+export class WorkerModule {}
