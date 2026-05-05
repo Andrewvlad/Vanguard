@@ -8,7 +8,7 @@ async function bootstrap(): Promise<void> {
         logger: ['error', 'warn', 'log'],
     });
 
-    // https://docs.nestjs.com/fundamentals/lifecycle-events#application-shutdown
+    // Docs: https://docs.nestjs.com/fundamentals/lifecycle-events#application-shutdown
     app.enableShutdownHooks();
 
     const logger = new Logger('Worker');
