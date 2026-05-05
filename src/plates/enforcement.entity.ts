@@ -1,25 +1,34 @@
-import {Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany} from 'typeorm';
+import {EntitySchema} from 'typeorm';
 import {Photo} from './photo.entity';
 
-// Schema comes from task 4 & 10
-// Docs: https://docs.nestjs.com/techniques/database#repository-pattern
-@Entity('enforcements')
 export class Enforcement {
-    @PrimaryGeneratedColumn('uuid')
     id: string;
-
-    @Column()
     plate: string;
-
-    @Column({name: 'lot_id'})
     lotId: string;
-
-    @Column({name: 'payment_id', unique: true})
     paymentId: string;
-
-    @CreateDateColumn({name: 'issued_at'})
     issuedAt: Date;
-
-    @OneToMany(() => Photo, (photo) => photo.enforcement, {cascade: true})
     photos: Photo[];
 }
+
+// Schema comes from task 4 & 10.
+// Docs: https://docs.nestjs.com/techniques/database#separating-entity-definition
+export const EnforcementSchema = new EntitySchema<Enforcement>({
+    name: 'Enforcement',
+    target: Enforcement,
+    tableName: 'enforcements',
+    columns: {
+        id: {type: 'uuid', primary: true, generated: 'uuid'},
+        plate: {type: String},
+        lotId: {type: String, name: 'lot_id'},
+        paymentId: {type: String, name: 'payment_id', unique: true},
+        issuedAt: {type: Date, name: 'issued_at', createDate: true},
+    },
+    relations: {
+        photos: {
+            type: 'one-to-many',
+            target: 'Photo',
+            inverseSide: 'enforcement',
+            cascade: true,
+        },
+    },
+});

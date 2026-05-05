@@ -1,16 +1,29 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn} from 'typeorm';
+import {EntitySchema} from 'typeorm';
 import {Enforcement} from './enforcement.entity';
 
-// Docs: https://docs.nestjs.com/techniques/database#repository-pattern
-@Entity('photos')
 export class Photo {
-    @PrimaryGeneratedColumn('uuid')
     id: string;
-
-    @Column({name: 's3_key'})
     s3Key: string;
-
-    @ManyToOne(() => Enforcement, (enforcement) => enforcement.photos, {onDelete: 'CASCADE'})
-    @JoinColumn({name: 'enforcement_id'})
     enforcement: Enforcement;
 }
+
+// Docs: https://docs.nestjs.com/techniques/database#separating-entity-definition
+export const PhotoSchema = new EntitySchema<Photo>({
+    name: 'Photo',
+    target: Photo,
+    tableName: 'photos',
+    columns: {
+        id: {type: 'uuid', primary: true, generated: 'uuid'},
+        // S3 object key from /uploads (e.g. uploads/<uuid>.jpg)
+        s3Key: {type: String, name: 's3_key'},
+    },
+    relations: {
+        enforcement: {
+            type: 'many-to-one',
+            target: 'Enforcement',
+            inverseSide: 'photos',
+            joinColumn: {name: 'enforcement_id'},
+            onDelete: 'CASCADE',
+        },
+    },
+});

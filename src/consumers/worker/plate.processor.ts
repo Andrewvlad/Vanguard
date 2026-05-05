@@ -4,7 +4,7 @@ import {Job} from 'bullmq';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
 import {LambdaService} from '../../aws/lambda.service';
-import {Enforcement} from '../../plates/enforcement.entity';
+import {Enforcement, EnforcementSchema} from '../../plates/enforcement.entity';
 
 type PlateDto = {
     paymentId: string;
@@ -20,7 +20,7 @@ export class PlateProcessor extends WorkerHost {
     constructor(
         private readonly lambda: LambdaService,
         // Docs: https://docs.nestjs.com/techniques/database#repository-pattern
-        @InjectRepository(Enforcement)
+        @InjectRepository(EnforcementSchema)
         private readonly enforcements: Repository<Enforcement>,
     ) {
         super();
