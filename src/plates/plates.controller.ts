@@ -4,6 +4,7 @@ import {Queue} from 'bullmq';
 
 // TODO: Add query validation
 type PlateDto = {
+    paymentId: string; // Serves as idempotency key
     plate: string;
     lotId: string;
 };
@@ -16,11 +17,20 @@ export class PlatesController {
     @Post()
     @HttpCode(HttpStatus.ACCEPTED) // 202 since request is accepted but not available
     async enqueue(@Body() body: PlateDto) {
-        const job = await this.plateQueue.add('process-plate', {
-            plate: body.plate,
-            lotId: body.lotId,
-        });
+        const job = await this.plateQueue.add(
+            'process-plate',
+            {
+                paymentId: body.paymentId, // Not necessary to enumerate (see jobId), but consistent
+                plate: body.plate,
+                lotId: body.lotId,
+            },
+            // Docs: https://docs.bullmq.io/guide/jobs/job-ids
+            // This is a simple implementation of idempotency:
+            //      - It does not solve for multiple queues
+            //      - Only idempotent while in the queue (can be re-enqueued after BullMQ cleanup)
+            {jobId: body.paymentId},
+        );
 
-        return {jobId: job.id}; // Job ID returned for tracking purposes
+        return {jobId: job.id}; // Job ID returned for tracking purposes (paymentId)
     }
 }

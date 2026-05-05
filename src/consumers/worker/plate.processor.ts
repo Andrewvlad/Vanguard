@@ -9,7 +9,7 @@ export class PlateProcessor extends WorkerHost {
 
     // Async kept to match WorkerHost, as well as prepare for actual usage
     // eslint-disable-next-line @typescript-eslint/require-await
-    async process(job: Job<{plate: string; lotId: string}>): Promise<void> {
+    async process(job: Job<{paymentId: string; plate: string; lotId: string}>): Promise<void> {
         this.logger.log(`Processing job ${job.id} (${job.name}):`, job.data);
     }
 }
