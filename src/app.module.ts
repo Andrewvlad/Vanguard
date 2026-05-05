@@ -1,7 +1,5 @@
 import {Module} from '@nestjs/common';
 import {BullModule} from '@nestjs/bullmq';
-import {AppController} from './app.controller';
-import {AppService} from './app.service';
 import {RedisModule} from './redis/redis.module';
 import {redisConnection} from './redis/redis.config';
 import {PlatesModule} from './plates/plates.module';
@@ -13,7 +11,5 @@ import {PlatesModule} from './plates/plates.module';
         RedisModule,
         PlatesModule,
     ],
-    controllers: [AppController],
-    providers: [AppService],
 })
 export class AppModule {}
