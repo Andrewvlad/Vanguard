@@ -5,7 +5,7 @@ import {Queue} from 'bullmq';
 // TODO: Add query validation
 type PlateDto = {
     paymentId: string; // Serves as idempotency key
-    plate: string;
+    plate: string; // S3 filename from /uploads
     lotId: string;
 };
 

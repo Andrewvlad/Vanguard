@@ -3,6 +3,7 @@ import {ConfigModule} from '@nestjs/config';
 import {BullModule} from '@nestjs/bullmq';
 import {RedisModule} from '../../redis/redis.module';
 import {redisConnection} from '../../redis/redis.config';
+import {LambdaService} from '../../aws/lambda.service';
 import {PlateProcessor} from './plate.processor';
 
 @Module({
@@ -13,6 +14,6 @@ import {PlateProcessor} from './plate.processor';
         BullModule.forRoot({connection: redisConnection()}),
         RedisModule,
     ],
-    providers: [PlateProcessor],
+    providers: [PlateProcessor, LambdaService],
 })
 export class WorkerModule {}
