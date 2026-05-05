@@ -4,6 +4,7 @@ import {BullModule} from '@nestjs/bullmq';
 import {RedisModule} from './redis/redis.module';
 import {redisConnection} from './redis/redis.config';
 import {PlatesModule} from './plates/plates.module';
+import {UploadsModule} from './uploads/uploads.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import {PlatesModule} from './plates/plates.module';
         BullModule.forRoot({connection: redisConnection()}),
         RedisModule,
         PlatesModule,
+        UploadsModule,
     ],
 })
 export class AppModule {}
