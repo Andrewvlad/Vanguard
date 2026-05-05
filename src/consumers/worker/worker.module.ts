@@ -27,6 +27,8 @@ import {PlateProcessor} from './plate.processor';
         TypeOrmModule.forFeature([EnforcementSchema, PhotoSchema]),
         // Docs: https://docs.nestjs.com/techniques/queues
         BullModule.forRoot({connection: redisConnection()}),
+        // Dead-letter queue
+        BullModule.registerQueue({name: 'plate-processing-dlq'}),
         RedisModule,
     ],
     providers: [PlateProcessor, LambdaService],

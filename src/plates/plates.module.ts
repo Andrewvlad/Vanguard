@@ -7,6 +7,13 @@ import {PlatesController} from './plates.controller';
         // Docs: https://docs.nestjs.com/techniques/queues
         BullModule.registerQueue({
             name: 'plate-processing',
+            // Dead-letter queue
+            // Docs: https://docs.bullmq.io/guide/retrying-failing-jobs
+            defaultJobOptions: {
+                attempts: 3,
+                // 2000 * 2^(attempts-1) = retries at 4s & 12s.
+                backoff: {type: 'exponential', delay: 2000},
+            },
         }),
     ],
     controllers: [PlatesController],

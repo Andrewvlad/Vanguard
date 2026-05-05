@@ -1,6 +1,6 @@
 import {Logger} from '@nestjs/common';
-import {Processor, WorkerHost} from '@nestjs/bullmq';
-import {Job} from 'bullmq';
+import {InjectQueue, OnWorkerEvent, Processor, WorkerHost} from '@nestjs/bullmq';
+import {Job, Queue} from 'bullmq';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm';
 import {LambdaService} from '../../aws/lambda.service';
@@ -22,6 +22,9 @@ export class PlateProcessor extends WorkerHost {
         // Docs: https://docs.nestjs.com/techniques/database#repository-pattern
         @InjectRepository(EnforcementSchema)
         private readonly enforcements: Repository<Enforcement>,
+        // Dead-letter queue for when jobs finish retry attempts
+        @InjectQueue('plate-processing-dlq')
+        private readonly dlq: Queue,
     ) {
         super();
     }
@@ -40,5 +43,34 @@ export class PlateProcessor extends WorkerHost {
         });
 
         this.logger.log(`[Complete] Job ${job.id} (${job.name})`);
+    }
+
+    // Docs: https://docs.bullmq.io/guide/events
+    @OnWorkerEvent('failed')
+    async onFailed(job: Job<PlateDto>, err: Error): Promise<void> {
+        const maxAttempts = job.opts.attempts ?? 1;
+        const failedTimestamp = new Date().toISOString();
+
+        this.logger.error(
+            JSON.stringify({
+                event: 'job.failed',
+                jobId: job.id,
+                paymentId: job.data?.paymentId,
+                attempt: `${job.attemptsMade} / ${maxAttempts}`,
+                failedAt: failedTimestamp,
+                error: err.message,
+            }),
+        );
+
+        // Hits every failure, so a gate is needed to check for final
+        if ((job.attemptsMade ?? 0) < maxAttempts) return;
+
+        await this.dlq.add('failed-plate', {
+            originalJobId: job.id,
+            originalQueue: 'plate-processing',
+            data: job.data,
+            error: {message: err.message, stack: err.stack},
+            failedAt: failedTimestamp,
+        });
     }
 }
