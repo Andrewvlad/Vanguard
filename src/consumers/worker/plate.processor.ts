@@ -1,7 +1,10 @@
+import {Logger} from '@nestjs/common';
 import {Processor, WorkerHost} from '@nestjs/bullmq';
 import {Job} from 'bullmq';
-import {Logger} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from 'typeorm';
 import {LambdaService} from '../../aws/lambda.service';
+import {Enforcement} from '../../plates/enforcement.entity';
 
 type PlateDto = {
     paymentId: string;
@@ -14,7 +17,12 @@ type PlateDto = {
 export class PlateProcessor extends WorkerHost {
     private readonly logger = new Logger(PlateProcessor.name);
 
-    constructor(private readonly lambda: LambdaService) {
+    constructor(
+        private readonly lambda: LambdaService,
+        // Docs: https://docs.nestjs.com/techniques/database#repository-pattern
+        @InjectRepository(Enforcement)
+        private readonly enforcements: Repository<Enforcement>,
+    ) {
         super();
     }
 
@@ -23,13 +31,13 @@ export class PlateProcessor extends WorkerHost {
 
         const ocrPlate = await this.lambda.invokePlateOcr(job.data.plate);
 
-        // TODO: Replace with DB write (Postgres + TypeORM)
-        this.logger.log(
-            `paymentId: ${job.data.paymentId},
-            plate: ${ocrPlate}, // Plate # from OCR
-            lotId: ${job.data.lotId},
-            attachment: ${job.data.plate}, // S3 key from /uploads`,
-        );
+        // Photo is inserted alongside the enforcement in a single save() transaction
+        await this.enforcements.save({
+            paymentId: job.data.paymentId,
+            plate: ocrPlate,
+            lotId: job.data.lotId,
+            photos: [{s3Key: job.data.plate}],
+        });
 
         this.logger.log(`[Complete] Job ${job.id} (${job.name})`);
     }
