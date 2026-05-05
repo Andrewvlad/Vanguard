@@ -7,6 +7,7 @@ import {redisConnection} from '../../redis/redis.config';
 import {LambdaService} from '../../aws/lambda.service';
 import {EnforcementSchema} from '../../plates/enforcement.entity';
 import {PhotoSchema} from '../../plates/photo.entity';
+import {dbConnection} from '../../db/db.config';
 import {PlateProcessor} from './plate.processor';
 
 @Module({
@@ -14,16 +15,7 @@ import {PlateProcessor} from './plate.processor';
         // Docs: https://docs.nestjs.com/techniques/configuration
         ConfigModule.forRoot({isGlobal: true}),
         // Docs: https://docs.nestjs.com/techniques/database
-        TypeOrmModule.forRoot({
-            type: 'postgres',
-            host: process.env.DB_HOST ?? 'localhost',
-            port: Number(process.env.DB_PORT ?? 5432),
-            username: process.env.DB_USER ?? 'postgres',
-            password: process.env.DB_PASSWORD ?? 'postgres',
-            database: process.env.DB_NAME ?? 'vanguard',
-            entities: [EnforcementSchema, PhotoSchema],
-            synchronize: true,
-        }),
+        TypeOrmModule.forRoot(dbConnection()),
         TypeOrmModule.forFeature([EnforcementSchema, PhotoSchema]),
         // Docs: https://docs.nestjs.com/techniques/queues
         BullModule.forRoot({connection: redisConnection()}),

@@ -1,8 +1,10 @@
 import {Module} from '@nestjs/common';
 import {ConfigModule} from '@nestjs/config';
 import {BullModule} from '@nestjs/bullmq';
+import {TypeOrmModule} from '@nestjs/typeorm';
 import {RedisModule} from './redis/redis.module';
 import {redisConnection} from './redis/redis.config';
+import {dbConnection} from './db/db.config';
 import {PlatesModule} from './plates/plates.module';
 import {UploadsModule} from './uploads/uploads.module';
 
@@ -10,6 +12,8 @@ import {UploadsModule} from './uploads/uploads.module';
     imports: [
         // Docs: https://docs.nestjs.com/techniques/configuration
         ConfigModule.forRoot({isGlobal: true}),
+        // Docs: https://docs.nestjs.com/techniques/database
+        TypeOrmModule.forRoot(dbConnection()),
         // Docs: https://docs.nestjs.com/techniques/queues
         BullModule.forRoot({connection: redisConnection()}),
         RedisModule,

@@ -1,5 +1,8 @@
 import {Module} from '@nestjs/common';
 import {BullModule} from '@nestjs/bullmq';
+import {TypeOrmModule} from '@nestjs/typeorm';
+import {EnforcementSchema} from './enforcement.entity';
+import {PhotoSchema} from './photo.entity';
 import {PlatesController} from './plates.controller';
 
 @Module({
@@ -15,6 +18,8 @@ import {PlatesController} from './plates.controller';
                 backoff: {type: 'exponential', delay: 2000},
             },
         }),
+        // Docs: https://docs.nestjs.com/techniques/database
+        TypeOrmModule.forFeature([EnforcementSchema, PhotoSchema]),
     ],
     controllers: [PlatesController],
 })
