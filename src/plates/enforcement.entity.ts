@@ -31,4 +31,6 @@ export const EnforcementSchema = new EntitySchema<Enforcement>({
             cascade: true,
         },
     },
+    // Index for GET /plates?lotId=X (lot_id filter + issued_at order).
+    indices: [{name: 'idx_enforcements_lot_id_issued_at', columns: ['lotId', 'issuedAt']}],
 });
